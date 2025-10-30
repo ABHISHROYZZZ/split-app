@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SplitEasy - Smart Bill Splitting</title>
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+            --light-bg: #f0f8ff;
+            --dark-text: #2c3e50;
+            --gray-text: #7f8c8d;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Arial', sans-serif;
+        }
+        
+        body {
+            background-color: var(--light-bg);
+            color: var(--dark-text);
+            line-height: 1.6;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        header {
+            text-align: center;
+            padding: 30px 20px;
+            background: var(--light-bg);
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            color: var(--dark-text);
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            color: var(--gray-text);
+        }
+        
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid #ddd;
+            background: var(--light-bg);
+        }
+        
+        .tab-button {
+            padding: 15px 25px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1.1rem;
+            color: var(--gray-text);
+            transition: all 0.3s ease;
+        }
+        
+        .tab-button.active {
+            color: var(--primary-color);
+            border-bottom: 3px solid var(--primary-color);
+            background: white;
+        }
+        
+        .tab-content {
+            display: none;
+            padding: 20px;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .card-title {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: var(--primary-color);
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+        
+        .checkbox-group {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+        
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+        }
+        
+        .checkbox-item input {
+            width: auto;
+            margin-right: 10px;
+        }
+        
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+        
+        .btn-success {
+            background: var(--success-color);
+            color: white;
+        }
+        
+        .btn-warning {
+            background: var(--warning-color);
+            color: white;
+        }
+        
+        .btn-danger {
+            background: var(--danger-color);
+            color: white;
+        }
+        
+        .btn:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+        
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .quick-btn {
+            padding: 10px;
+            background: var(--light-bg);
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        
+        .quick-btn:hover {
+            background: var(--primary-color);
+            color: white;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        th {
+            background: var(--light-bg);
+            font-weight: bold;
+        }
+        
+        .total-expenses {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .positive {
+            color: var(--success-color);
+        }
+        
+        .negative {
+            color: var(--danger-color);
+        }
+        
+        .payment-info {
+            background: var(--light-bg);
+            padding: 15px;
+            border-radius: 4px;
+            margin: 15px 0;
+            font-size: 0.9rem;
+            color: var(--gray-text);
+        }
+        
+        .instructions {
+            background: #e8f4fc;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 15px 0;
+        }
+        
+        .instructions h3 {
+            margin-bottom: 10px;
+            color: var(--primary-color);
+        }
+        
+        .instructions ul {
+            padding-left: 20px;
+        }
+        
+        .instructions li {
+            margin-bottom: 8px;
+        }
+        
+        .refresh-btn {
+            float: right;
+            padding: 8px 15px;
+            font-size: 0.9rem;
+        }
+        
+        .clear {
+            clear: both;
+        }
+        
+        .action-buttons {
+            margin: 20px 0;
+            text-align: center;
+        }
+        
+        .select-controls {
+            margin-bottom: 10px;
+        }
+        
+        .status-message {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            text-align: center;
+        }
+        
+        .status-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .status-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .status-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        
+        .data-info {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+            text-align: center;
+            font-size: 0.9rem;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                margin: 0;
+                border-radius: 0;
+            }
+            
+            .tabs {
+                flex-direction: column;
+            }
+            
+            .tab-button {
+                text-align: center;
+            }
+            
+            .checkbox-group {
+                grid-template-columns: 1fr;
+            }
+            
+            .quick-actions {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>SplitOptions</h1>
+            <p class="subtitle">Split bills easily among friends with UPI payments</p>
+        </header>
+        
+        <div class="tabs">
+            <button class="tab-button active" onclick="openTab(event, 'add-expense')">Add Expense</button>
+            <button class="tab-button" onclick="openTab(event, 'view-expenses')">View Expenses</button>
+            <button class="tab-button" onclick="openTab(event, 'split-bill')">Split Bill</button>
+        </div>
+        
+        <!-- Status message area -->
+        <div id="status-message" class="status-message" style="display: none;"></div>
+        
+        <!-- Data expiration info -->
+        <div id="data-info" class="data-info" style="display: none;"></div>
+        
+        <!-- Add Expense Tab -->
+        <div id="add-expense" class="tab-content active">
+            <div class="card">
+                <h2 class="card-title">New Expense Details</h2>
+                <div class="form-group">
+                    <label for="description">Description:</label>
+                    <input type="text" id="description" placeholder="Enter expense description">
+                </div>
+                
+                <div class="form-group">
+                    <label for="amount">Amount (₹):</label>
+                    <input type="number" id="amount" placeholder="Enter amount" step="0.01">
+                </div>
+                
+                <div class="form-group">
+                    <label for="paid-by">Paid by:</label>
+                    <select id="paid-by">
+                        <option value="Abhishek">Abhishek</option>
+                        <option value="Rahul">Rahul</option>
+                        <option value="Priya">Priya</option>
+                        <option value="Sneha">Sneha</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Split between:</label>
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="person1" checked>
+                            <label for="person1">Abhishek</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="person2" checked>
+                            <label for="person2">Rahul</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="person3" checked>
+                            <label for="person3">Priya</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="person4" checked>
+                            <label for="person4">Sneha</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <button class="btn btn-primary" onclick="addExpense()">Add Expense</button>
+            </div>
+            
+            <div class="card">
+                <h2 class="card-title">Quick Actions</h2>
+                <p>Common expenses:</p>
+                <div class="quick-actions">
+                    <button class="quick-btn" onclick="quickAdd('Dinner', 800)">Dinner (₹800)</button>
+                    <button class="quick-btn" onclick="quickAdd('Movie Tickets', 1200)">Movie Tickets (₹1200)</button>
+                    <button class="quick-btn" onclick="quickAdd('Groceries', 2500)">Groceries (₹2500)</button>
+                    <button class="quick-btn" onclick="quickAdd('Fuel', 700)">Fuel (₹700)</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- View Expenses Tab -->
+        <div id="view-expenses" class="tab-content">
+            <div class="card">
+                <h2 class="card-title">Expense History</h2>
+                
+                <div class="select-controls">
+                    <button class="btn" onclick="selectAll()">Select All</button>
+                    <button class="btn" onclick="deselectAll()">Deselect All</button>
+                    <button class="btn" onclick="refreshData()">Refresh Data</button>
+                </div>
+                
+                <table id="expenses-table">
+                    <thead>
+                        <tr>
+                            <th>Select</th>
+                            <th>Description</th>
+                            <th>Amount</th>
+                            <th>Paid By</th>
+                            <th>Split Between</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody id="expenses-body">
+                        <!-- Expenses will be added here dynamically -->
+                    </tbody>
+                </table>
+                
+                <div class="action-buttons">
+                    <button class="btn btn-danger" onclick="deleteSelected()">Delete Selected</button>
+                </div>
+            </div>
+            
+            <div class="total-expenses" id="total-expenses">
+                Total Expenses: ₹0.00
+            </div>
+        </div>
+        
+        <!-- Split Bill Tab -->
+        <div id="split-bill" class="tab-content">
+            <div class="card">
+                <h2 class="card-title">UPI Payment</h2>
+                <div class="form-group">
+                    <label for="upi-id">Enter UPI ID/VPA:</label>
+                    <input type="text" id="upi-id" placeholder="Enter your UPI ID">
+                </div>
+                
+                <div class="form-group">
+                    <label for="payment-amount">Amount (₹):</label>
+                    <input type="number" id="payment-amount" placeholder="Enter amount" step="0.01">
+                </div>
+                
+                <button class="btn btn-success" onclick="processPayment()">Pay via UPI</button>
+                
+                <div class="payment-info">
+                    ℹ️ Payment will be split equally among all 4 persons
+                </div>
+            </div>
+            
+            <div class="card">
+                <h2 class="card-title">Split Summary</h2>
+                <button class="btn refresh-btn" onclick="updateSummary()">Refresh</button>
+                <div class="clear"></div>
+                
+                <div id="summary-content">
+                    <p>No expenses added yet</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Sample data for 4 people
+        const people = ["Abhishek", "Rahul", "Priya", "Sneha"];
+        let expenses = [];
+        
+        // Unique ID for this shared data
+        const SHARED_ID = "splitting-app-data-12345";
+        
+        // Version tracking to handle concurrent updates
+        let dataVersion = 0;
+        
+        // Show status message
+        function showStatus(message, type) {
+            const statusDiv = document.getElementById('status-message');
+            statusDiv.textContent = message;
+            statusDiv.className = 'status-message status-' + type;
+            statusDiv.style.display = 'block';
+            
+            // Auto-hide after 3 seconds
+            setTimeout(() => {
+                statusDiv.style.display = 'none';
+            }, 3000);
+        }
+        
+        // Show data expiration info
+        function showDataInfo(message) {
+            const infoDiv = document.getElementById('data-info');
+            infoDiv.textContent = message;
+            infoDiv.style.display = 'block';
+        }
+        
+        // Hide data expiration info
+        function hideDataInfo() {
+            document.getElementById('data-info').style.display = 'none';
+        }
+        
+        // Check if data has expired (7 days)
+        function isDataExpired(creationDate) {
+            if (!creationDate) return true;
+            const created = new Date(creationDate);
+            const now = new Date();
+            const diffTime = Math.abs(now - created);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            return diffDays > 7;
+        }
+        
+        // Load expenses from localStorage
+        function loadExpenses() {
+            try {
+                showStatus("Loading data...", "info");
+                const savedExpenses = localStorage.getItem('splittingAppExpenses');
+                if (savedExpenses) {
+                    const parsedData = JSON.parse(savedExpenses);
+                    expenses = parsedData.expenses || [];
+                    dataVersion = parsedData.version || 0;
+                    showStatus("Data loaded successfully", "success");
+                } else {
+                    expenses = [];
+                    dataVersion = 0;
+                    showStatus("Initialized new data storage", "success");
+                }
+            } catch (error) {
+                console.error("Error loading expenses:", error);
+                expenses = [];
+                dataVersion = 0;
+                showStatus("Error loading data. Starting fresh.", "error");
+            }
+            updateExpensesTable();
+            updateSummary();
+        }
+        
+        // Save expenses to localStorage
+        function saveExpenses() {
+            try {
+                const dataToSave = {
+                    expenses: expenses,
+                    version: dataVersion + 1,
+                    lastSaved: new Date().toISOString()
+                };
+                localStorage.setItem('splittingAppExpenses', JSON.stringify(dataToSave));
+                dataVersion = dataVersion + 1;
+                showStatus("Data saved successfully", "success");
+                return true;
+            } catch (error) {
+                console.error("Error saving expenses:", error);
+                showStatus("Error saving data", "error");
+                return false;
+            }
+        }
+        
+        // Refresh data from localStorage
+        function refreshData() {
+            hideDataInfo();
+            loadExpenses();
+        }
+        
+        // Tab switching functionality
+        function openTab(evt, tabName) {
+            // Hide all tab content
+            const tabContents = document.getElementsByClassName("tab-content");
+            for (let i = 0; i < tabContents.length; i++) {
+                tabContents[i].classList.remove("active");
+            }
+            
+            // Remove active class from all tab buttons
+            const tabButtons = document.getElementsByClassName("tab-button");
+            for (let i = 0; i < tabButtons.length; i++) {
+                tabButtons[i].classList.remove("active");
+            }
+            
+            // Show the current tab and add active class to the button
+            document.getElementById(tabName).classList.add("active");
+            evt.currentTarget.classList.add("active");
+            
+            // Update summary when switching to split bill tab
+            if (tabName === 'split-bill') {
+                updateSummary();
+            }
+            
+            // Update expenses table when switching to view expenses tab
+            if (tabName === 'view-expenses') {
+                updateExpensesTable();
+            }
+        }
+        
+        // Quick add functionality
+        function quickAdd(description, amount) {
+            document.getElementById('description').value = description;
+            document.getElementById('amount').value = amount;
+        }
+        
+        // Add expense functionality
+        function addExpense() {
+            const desc = document.getElementById('description').value.trim();
+            const amountStr = document.getElementById('amount').value.trim();
+            const paidBy = document.getElementById('paid-by').value;
+            
+            // Validate inputs
+            if (!desc) {
+                showStatus("Please enter a description", "error");
+                return;
+            }
+            
+            const amount = parseFloat(amountStr);
+            if (isNaN(amount) || amount <= 0) {
+                showStatus("Please enter a valid amount", "error");
+                return;
+            }
+            
+            // Get people to split between
+            const splitBetween = [];
+            for (let i = 0; i < people.length; i++) {
+                const checkbox = document.getElementById(`person${i+1}`);
+                if (checkbox.checked) {
+                    splitBetween.push(people[i]);
+                }
+            }
+            
+            if (splitBetween.length !== 4) {
+                showStatus("Please select all 4 persons to split between", "error");
+                // Select all by default
+                for (let i = 0; i < people.length; i++) {
+                    document.getElementById(`person${i+1}`).checked = true;
+                }
+                return;
+            }
+            
+            // Add expense
+            const now = new Date();
+            const dateStr = now.toLocaleDateString() + " " + now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            
+            const expense = {
+                description: desc,
+                amount: amount,
+                paidBy: paidBy,
+                splitBetween: [...splitBetween],
+                date: dateStr
+            };
+            
+            expenses.push(expense);
+            
+            // Save to localStorage
+            saveExpenses();
+            
+            // Update UI
+            updateExpensesTable();
+            
+            // Clear form
+            document.getElementById('description').value = '';
+            document.getElementById('amount').value = '';
+            
+            // Update summary
+            updateSummary();
+            
+            showStatus("Expense added successfully!", "success");
+        }
+        
+        // Update expenses table
+        function updateExpensesTable() {
+            const tbody = document.getElementById('expenses-body');
+            tbody.innerHTML = '';
+            
+            if (expenses.length === 0) {
+                const row = document.createElement('tr');
+                row.innerHTML = `<td colspan="6" style="text-align: center;">No expenses added yet</td>`;
+                tbody.appendChild(row);
+            } else {
+                expenses.forEach((expense, index) => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td><input type="checkbox" class="expense-checkbox" data-index="${index}"></td>
+                        <td>${expense.description}</td>
+                        <td>₹${expense.amount.toFixed(2)}</td>
+                        <td>${expense.paidBy}</td>
+                        <td>${expense.splitBetween.join(', ')}</td>
+                        <td>${expense.date}</td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            }
+            
+            // Update total
+            const total = expenses.reduce((sum, expense) => sum + expense.amount, 0);
+            document.getElementById('total-expenses').textContent = `Total Expenses: ₹${total.toFixed(2)}`;
+        }
+        
+        // Select all checkboxes
+        function selectAll() {
+            const checkboxes = document.querySelectorAll('.expense-checkbox');
+            checkboxes.forEach(checkbox => checkbox.checked = true);
+        }
+        
+        // Deselect all checkboxes
+        function deselectAll() {
+            const checkboxes = document.querySelectorAll('.expense-checkbox');
+            checkboxes.forEach(checkbox => checkbox.checked = false);
+        }
+        
+        // Delete selected expenses
+        function deleteSelected() {
+            const checkboxes = document.querySelectorAll('.expense-checkbox:checked');
+            
+            if (checkboxes.length === 0) {
+                showStatus("Please select at least one expense to delete", "error");
+                return;
+            }
+            
+            if (!confirm(`Are you sure you want to delete ${checkboxes.length} expense(s)?`)) {
+                return;
+            }
+            
+            // Get indices of selected expenses in reverse order
+            const indices = Array.from(checkboxes)
+                .map(checkbox => parseInt(checkbox.getAttribute('data-index')))
+                .sort((a, b) => b - a); // Sort in descending order
+            
+            // Remove expenses starting from the highest index
+            indices.forEach(index => {
+                expenses.splice(index, 1);
+            });
+            
+            // Save to localStorage
+            saveExpenses();
+            
+            // Update UI
+            updateExpensesTable();
+            updateSummary();
+            
+            showStatus("Selected expense(s) deleted successfully!", "success");
+        }
+        
+        // Update summary
+        function updateSummary() {
+            const summaryContent = document.getElementById('summary-content');
+            
+            if (expenses.length === 0) {
+                summaryContent.innerHTML = '<p>No expenses added yet</p>';
+                return;
+            }
+            
+            // Calculate balances
+            const balances = {};
+            people.forEach(person => balances[person] = 0);
+            
+            expenses.forEach(expense => {
+                const amount = expense.amount;
+                const paidBy = expense.paidBy;
+                const splitBetween = expense.splitBetween;
+                
+                // Person who paid gets credited
+                balances[paidBy] += amount;
+                
+                // Split amount among people
+                const splitAmount = amount / splitBetween.length;
+                splitBetween.forEach(person => {
+                    balances[person] -= splitAmount;
+                });
+            });
+            
+            // Build summary HTML
+            let summaryHTML = `
+                <div class="summary-item">
+                    <h3>Current Balances</h3>
+                </div>
+            `;
+            
+            people.forEach(person => {
+                const balance = balances[person];
+                const balanceText = Math.abs(balance).toFixed(2);
+                const statusText = balance >= 0 ? "gets back" : "owes";
+                const className = balance >= 0 ? "positive" : "negative";
+                
+                summaryHTML += `
+                    <div class="summary-item">
+                        <span>${person}</span>
+                        <span class="${className}">${statusText} ₹${balanceText}</span>
+                    </div>
+                `;
+            });
+            
+            // Simplify debts
+            summaryHTML += `<h3 style="margin: 20px 0 10px;">Simplified Payments</h3>`;
+            
+            const creditors = Object.entries(balances)
+                .filter(([_, balance]) => balance > 0.01)
+                .map(([person, balance]) => ({person, balance}));
+                
+            const debtors = Object.entries(balances)
+                .filter(([_, balance]) => balance < -0.01)
+                .map(([person, balance]) => ({person, balance: -balance}));
+            
+            if (creditors.length === 0 && debtors.length === 0) {
+                summaryHTML += `<p>All settled! No payments needed.</p>`;
+            } else {
+                summaryHTML += `<div class="instructions">
+                    <h3>To settle all balances:</h3>
+                    <ul>`;
+                
+                // Simple debt simplification
+                debtors.forEach(debtor => {
+                    creditors.forEach(creditor => {
+                        if (debtor.balance <= 0.01) return;
+                        
+                        const payment = Math.min(debtor.balance, creditor.balance);
+                        if (payment > 0.01) {
+                            summaryHTML += `<li>${debtor.person} pays ₹${payment.toFixed(2)} to ${creditor.person}</li>`;
+                            
+                            debtor.balance -= payment;
+                            creditor.balance -= payment;
+                        }
+                    });
+                });
+                
+                summaryHTML += `</ul></div>`;
+            }
+            
+            // Per person share
+            summaryHTML += `<h3 style="margin: 20px 0 10px;">Per Person Share</h3>`;
+            
+            if (expenses.length > 0) {
+                const totalAmount = expenses.reduce((sum, expense) => sum + expense.amount, 0);
+                const perPerson = totalAmount / 4; // Split among 4 persons
+                
+                summaryHTML += `
+                    <div class="summary-item">
+                        <span>Each person should contribute:</span>
+                        <span><strong>₹${perPerson.toFixed(2)}</strong></span>
+                    </div>
+                `;
+            }
+            
+            summaryContent.innerHTML = summaryHTML;
+        }
+        
+        // Process UPI payment
+        function processPayment() {
+            const upiId = document.getElementById('upi-id').value.trim();
+            const amountStr = document.getElementById('payment-amount').value.trim();
+            
+            if (!upiId) {
+                showStatus("Please enter a UPI ID", "error");
+                return;
+            }
+            
+            const amount = parseFloat(amountStr);
+            if (isNaN(amount) || amount <= 0) {
+                showStatus("Please enter a valid amount", "error");
+                return;
+            }
+            
+            // Generate a fake transaction ID
+            const transactionId = Math.random().toString(36).substring(2, 14).toUpperCase();
+            const now = new Date();
+            const timeStr = now.toLocaleString();
+            
+            alert(`Payment processed successfully!\n\nTransaction ID: ${transactionId}\nUPI ID: ${upiId}\nAmount: ₹${amount.toFixed(2)}\nStatus: Completed\nTime: ${timeStr}\n\nThe amount will be split equally among all 4 persons.`);
+            
+            // Reset fields
+            document.getElementById('upi-id').value = '';
+            document.getElementById('payment-amount').value = '';
+        }
+        
+        // Initialize the app
+        document.addEventListener('DOMContentLoaded', function() {
+            // Load saved expenses
+            loadExpenses();
+        });
+    </script>
+</body>
+</html>
